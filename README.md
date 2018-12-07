@@ -1,13 +1,14 @@
 # H2O-monitor
 
 A Python script for a Raspberry Pi running Raspian counting the waterflow 
-of 9 valves with reed pulse switches.
+of valves with reed pulse switches.
 
 Reports readings to a DB (postgres) and visualizes them with a Grafana Dashboard
 
 
 
 ![alt text](https://github.com/planet-winter/H2O-monitor/raw/master/grafana.png "Grafan Sources monitor")
+![alt text](https://github.com/planet-winter/H2O-monitor/raw/master/reed_valve.jpg "valve with reed contact")
 
 
 ## project setup

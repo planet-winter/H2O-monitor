@@ -8,6 +8,7 @@ Reports readings to a DB (postgres) and visualizes them with a Grafana Dashboard
 
 
 ![alt text](https://github.com/planet-winter/H2O-monitor/raw/master/grafana.png "Grafan Sources monitor")
+![alt text](https://github.com/planet-winter/H2O-monitor/raw/master/reed_valve "valve with reed contact")
 
 
 ## project setup

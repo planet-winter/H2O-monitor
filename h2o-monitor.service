@@ -1,0 +1,15 @@
+[Unit]
+Description=H2O monitor service
+After=network.target
+After=postgresql.service
+After=mysqld.service
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+ExecStart=/usr/bin/env python3 /opt/h2o-monitor.py
+
+[Install]
+WantedBy=multi-user.target

@@ -26,7 +26,7 @@ from pytz import timezone
 from datetime import datetime
 
 
-bounce = 1
+bounce = 100
 
 # pin = channel
 source1_pulse_pin = 7
@@ -38,6 +38,9 @@ source6_pulse_pin = 31
 source7_pulse_pin = 33
 source8_pulse_pin = 35
 source9_pulse_pin = 37
+source10_pulse_pin = 12
+source11_pulse_pin = 16
+source12_pulse_pin = 18
 
 pulse_pins = []
 pulse_pins.append(source1_pulse_pin)
@@ -49,6 +52,9 @@ pulse_pins.append(source6_pulse_pin)
 pulse_pins.append(source7_pulse_pin)
 pulse_pins.append(source8_pulse_pin)
 pulse_pins.append(source9_pulse_pin)
+pulse_pins.append(source10_pulse_pin)
+pulse_pins.append(source11_pulse_pin)
+pulse_pins.append(source12_pulse_pin)
 
 # initialize  pulse counter
 pulses = [0] * len(pulse_pins)
@@ -76,7 +82,10 @@ h2o_logentry = Table('h2olog', metadata,
                    Column('source6', Numeric(precision=None, scale=None, decimal_return_scale=None, asdecimal=False)),
                    Column('source7', Numeric(precision=None, scale=None, decimal_return_scale=None, asdecimal=False)),
                    Column('source8', Numeric(precision=None, scale=None, decimal_return_scale=None, asdecimal=False)),
-                   Column('source9', Numeric(precision=None, scale=None, decimal_return_scale=None, asdecimal=False))
+                   Column('source9', Numeric(precision=None, scale=None, decimal_return_scale=None, asdecimal=False)),
+                   Column('source10', Numeric(precision=None, scale=None, decimal_return_scale=None, asdecimal=False)),
+                   Column('source11', Numeric(precision=None, scale=None, decimal_return_scale=None, asdecimal=False)),
+                   Column('source12', Numeric(precision=None, scale=None, decimal_return_scale=None, asdecimal=False))
 )
 
 

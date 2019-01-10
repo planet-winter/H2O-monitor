@@ -26,6 +26,7 @@ sudo systemctl start postgresql
 configure database user h2o with password h2o
 ```
 sudo su postgres
+createdb h2o
 createuser h2o -P --interactive
 
 Shall the new role be a superuser? (y/n) n
@@ -68,11 +69,12 @@ install requirements
 ```
 sudo apt-get install python3-pip
 sudo pip3 install --upgrade -r requirements.txt
-TODO more dependencies?
 ```
 
 Setup grafana dashboard.
-In a new dashboard settings tab enter the dashboard.json content
+* open the systems IP address or hostname in a browser
+* log in with admin and password admin
+* in a new dashboard settings tab enter the dashboard.json content
 
 
 autostart service 

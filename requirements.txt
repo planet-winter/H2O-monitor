@@ -1,0 +1,4 @@
+sqlalchemy
+RPi.GPIO
+pytz
+psycopg2

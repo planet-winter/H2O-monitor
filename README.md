@@ -31,12 +31,14 @@ createuser h2o -P --interactive
 Shall the new role be a superuser? (y/n) n
 Shall the new role be allowed to create databases? (y/n) y
 Shall the new role be allowed to create more new roles? (y/n) n
+
+exit
 ```
 
 install grafana visualization
 ```
 sudo apt-get install -y adduser libfontconfig
-wget https://s3-us-west-2.amazonaws.com/grafana-releases/release/grafana_5.4.0_armhf.deb
+sudo wget https://s3-us-west-2.amazonaws.com/grafana-releases/release/grafana_5.4.0_armhf.deb
 sudo dpkg -i grafana_5.4.0_armhf.deb
 ```
 
@@ -57,7 +59,8 @@ sudo systemctl start grafana-server
 clone this repo 
 ```
 cd /opt
-git clone git@github.com:planet-winter/H2O-monitor.git
+sudo apt-get install git
+sudo git clone https://github.com/planet-winter/H2O-monitor.git
 cd /opt/H2O-monitor
 ```
 

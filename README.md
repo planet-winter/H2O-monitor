@@ -76,6 +76,11 @@ Setup grafana dashboard.
 * log in with admin and password admin
 * in a new dashboard settings tab enter the dashboard.json content
 
+Setup grafana Postgres data source
+* goto configureation > data souces
+* choose PostgreSQL
+* enter Host: localhost and h2o as credentials and db name
+
 
 autostart service 
 ```

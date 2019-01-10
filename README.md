@@ -84,7 +84,7 @@ Setup grafana Postgres data source
 
 autostart service 
 ```
-sudo ./h2o-monitor.service /etc/systemd/system/
+sudo cp ./h2o-monitor.service /etc/systemd/system/
 sudo systemd daemon-reload
 sudo systemd enable h2o-monitor
 sudo systemd start h2o-monitor

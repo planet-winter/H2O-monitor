@@ -9,7 +9,7 @@ StartLimitIntervalSec=0
 Type=simple
 Restart=always
 RestartSec=1
-ExecStart=/usr/bin/env python3 /opt/h2o-monitor.py
+ExecStart=/usr/bin/env python3 /opt/H2O-monitor/h2o-monitor.py
 
 [Install]
 WantedBy=multi-user.target

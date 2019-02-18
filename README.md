@@ -3,7 +3,7 @@
 A Python script for a Raspberry Pi running Raspian counting the waterflow 
 of valves with reed pulse switches.
 
-Reports readings to a DB (postgres) and visualizes them with a Grafana Dashboard
+Reports readings to a DB (InfluxDB) and visualizes them with a Grafana Dashboard
 
 
 
@@ -18,22 +18,18 @@ on a raspberry pi with raspian
 
 install database server
 ```
-sudo apt-get install postgresql
-sudo systemctl enable  postgresql
-sudo systemctl start postgresql
+echo "deb https://repos.influxdata.com/debian stretch stable" | sudo tee /etc/apt/sources.list.d/influxdb.list
+sudo apt update
+sudo apt install influxdb
+sudo systemctl enable influxdb
+sudo systemctl start influxdb
+
+influx
+
+CREATE DATABASE h2oflow
+
 ```
 
-configure database user h2o with password h2o
-```
-sudo su postgres
-createdb h2o
-createuser h2o -P --interactive
-
-Shall the new role be a superuser? (y/n) n
-Shall the new role be allowed to create databases? (y/n) y
-Shall the new role be allowed to create more new roles? (y/n) n
-
-exit
 ```
 
 install grafana visualization

@@ -10,23 +10,15 @@ try:
 except:
     rpi = False
     print('RPi.GPIO not installed')
-
-import asyncio
-import datetime
-
-from sqlalchemy import create_engine
-from sqlalchemy import Table, Column, String, Numeric, MetaData, TIMESTAMP, Integer
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.types import TypeDecorator
-from sqlalchemy.sql import expression
-from sqlalchemy.ext.compiler import compiles
-from sqlalchemy.types import DateTime
-from pytz import timezone
+from influxdb import InfluxDBClient
 from datetime import datetime
+import time
+from pytz import timezone
+import sys
 
 
-bounce = 100
+LITERS_PER_PULSE = 1
+BOUNCETIME = 2
 
 # pin = channel
 source1_pulse_pin = 7
@@ -42,28 +34,29 @@ source10_pulse_pin = 12
 source11_pulse_pin = 16
 source12_pulse_pin = 18
 
-pulse_pins = []
-pulse_pins.append(source1_pulse_pin)
-pulse_pins.append(source2_pulse_pin)
-pulse_pins.append(source3_pulse_pin)
-pulse_pins.append(source4_pulse_pin)
-pulse_pins.append(source5_pulse_pin)
-pulse_pins.append(source6_pulse_pin)
-pulse_pins.append(source7_pulse_pin)
-pulse_pins.append(source8_pulse_pin)
-pulse_pins.append(source9_pulse_pin)
-pulse_pins.append(source10_pulse_pin)
-pulse_pins.append(source11_pulse_pin)
-pulse_pins.append(source12_pulse_pin)
-
-# initialize  pulse counter
-pulses = [0] * len(pulse_pins)
+PULSE_PINS = []
+PULSE_PINS.append(source1_pulse_pin)
+PULSE_PINS.append(source2_pulse_pin)
+PULSE_PINS.append(source3_pulse_pin)
+PULSE_PINS.append(source4_pulse_pin)
+PULSE_PINS.append(source5_pulse_pin)
+PULSE_PINS.append(source6_pulse_pin)
+PULSE_PINS.append(source7_pulse_pin)
+PULSE_PINS.append(source8_pulse_pin)
+PULSE_PINS.append(source9_pulse_pin)
+PULSE_PINS.append(source10_pulse_pin)
+PULSE_PINS.append(source11_pulse_pin)
+PULSE_PINS.append(source12_pulse_pin)
 
 
-db_string = "postgres://h2o:h2o@localhost/h2o"
 
-metadata = MetaData()
+client = InfluxDBClient(host='localhost', port=8086)
+client.switch_database('h2o')
 
+
+
+json_data = []
+write_counter = 0
 
 
 def time_now():
@@ -71,133 +64,60 @@ def time_now():
     return datetime.now(UTC)
 
 
-h2o_logentry = Table('h2olog', metadata,
-                   Column('id',Integer(), primary_key=True, autoincrement=True),
-                   Column('timestamp', TIMESTAMP(timezone=True), primary_key=False, nullable=False, default=time_now),
-                   Column('source1', Numeric(precision=None, scale=None, decimal_return_scale=None, asdecimal=False)),
-                   Column('source2', Numeric(precision=None, scale=None, decimal_return_scale=None, asdecimal=False)),
-                   Column('source3', Numeric(precision=None, scale=None, decimal_return_scale=None, asdecimal=False)),
-                   Column('source4', Numeric(precision=None, scale=None, decimal_return_scale=None, asdecimal=False)),
-                   Column('source5', Numeric(precision=None, scale=None, decimal_return_scale=None, asdecimal=False)),
-                   Column('source6', Numeric(precision=None, scale=None, decimal_return_scale=None, asdecimal=False)),
-                   Column('source7', Numeric(precision=None, scale=None, decimal_return_scale=None, asdecimal=False)),
-                   Column('source8', Numeric(precision=None, scale=None, decimal_return_scale=None, asdecimal=False)),
-                   Column('source9', Numeric(precision=None, scale=None, decimal_return_scale=None, asdecimal=False)),
-                   Column('source10', Numeric(precision=None, scale=None, decimal_return_scale=None, asdecimal=False)),
-                   Column('source11', Numeric(precision=None, scale=None, decimal_return_scale=None, asdecimal=False)),
-                   Column('source12', Numeric(precision=None, scale=None, decimal_return_scale=None, asdecimal=False))
-)
 
-
-global db
-db = create_engine(db_string)
-metadata.create_all(db)
+def pulse_2_liters(pulses):
+    return pulses * LITERS_PER_PULSE
 
 
 
-def reset_pulses():
-    global pulses
-    global pulse_pins
-    pulses = [0] * len(pulse_pins)
-
-
-class Timer:
-    def __init__(self, timeout, callback):
-        self._timeout = timeout
-        self._callback = callback
-        self._task = asyncio.ensure_future(self._job())
-
-    async def _job(self):
-        while True:
-            await asyncio.sleep(self._timeout)
-            await self._callback()
-
-
-    def cancel(self):
-        self._task.cancel()
+def channel_2_source(channel):
+    return PULSE_PINS.index(channel)
 
 
 
-async def pulsecounter_timer_callback():
-    await asyncio.sleep(0.1)
-    global pulses
-    print("pulses:", pulses)
+def log_pulse(channel):
 
-    await log_h2oflow()
+    global json_data
+    global write_counter
 
-    reset_pulses()
+    new_json_data = {
+	"measurement": "h2oflow",
+       	"tags": {
+        	"source": channel_2_source(channel),
+        },
+        "time": time_now(),
+        "fields": {
+        	"liters": pulse_2_liters(1), 
+      	}
+    }
 
-
-
-async def log_h2oflow():
-
-    global pulses
-    logline = h2o_logentry.insert().values(
-                                     source1=pulses[0],
-                                     source2=pulses[1],
-                                     source3=pulses[2],
-                                     source4=pulses[3],
-                                     source5=pulses[4],
-                                     source6=pulses[5],
-                                     source7=pulses[6],
-                                     source8=pulses[7],
-                                     source9=pulses[8],
-    )
-    global db
-    conn = db.connect()
-    result = conn.execute(logline) # no clue how to use ORM and async...
-    conn.close()
+    json_data.append(new_json_data)
+    write_counter+=1
+    # batch n writes together
+    if write_counter == 100:
+        client.write_points(json_data)
+        write_counter = 0
+        json_data = []
 
 
-
-def countpulse_callback(channel):
-    global pulses
-    pin = pulse_pins.index(channel)
-    pulses[pin] += 1
-
-
-def reset_pulses():
-    global pulses
-    global pulse_pins
-    pulses = [0] * len(pulse_pins)
-
-
-
-async def main():
-
-    global db
-    db = create_engine(db_string)
+def main():
 
     if rpi:
         GPIO.setmode(GPIO.BOARD)
-
-        for pin in pulse_pins:
+        for pin in PULSE_PINS:
+            print("setting up pin", pin)
             GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-            GPIO.add_event_detect(pin, GPIO.RISING, callback=countpulse_callback, bouncetime=bounce)
+            GPIO.add_event_detect(pin, GPIO.RISING, callback=log_pulse, bouncetime=BOUNCETIME)
+    else:
+        print("This code only runs on a Raspberry Pi")
 
-        timer = Timer(1, pulsecounter_timer_callback)
-
-
-    while True:  # CTRL+C to break - requires graceful exit
+    while True:
         try:
-            if rpi:
-                # continue
-                await asyncio.sleep(0.1)
-            else:
-                pass
-                #countpulse()
+            pass
+            #time.sleep(float(BOUNCETIME/1000))
         except KeyboardInterrupt:
             GPIO.cleanup()       # clean up GPIO on CTRL+C exit
+            sys.exit(1)
 
-
-
-
-loop = asyncio.new_event_loop()
-asyncio.set_event_loop(loop)
-try:
-    loop.run_until_complete(main())
-finally:
-    loop.run_until_complete(loop.shutdown_asyncgens())
-    loop.close()
-
-
+if __name__== "__main__":
+  main()
